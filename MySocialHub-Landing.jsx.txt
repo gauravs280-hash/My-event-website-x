@@ -1,0 +1,444 @@
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  MapPin,
+  Calendar,
+  Clock,
+  ChevronDown,
+  Instagram,
+  Mail,
+  Sparkles,
+} from "lucide-react";
+
+const C = {
+  primary: "#7B61FF",
+  secondary: "#FF4D9D",
+  accent: "#4CC9F0",
+  bg: "#0F172A",
+  card: "#1E293B",
+};
+
+const gradientText = {
+  backgroundImage: `linear-gradient(135deg, ${C.primary}, ${C.secondary})`,
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  color: "transparent",
+};
+
+const gradientBg = {
+  backgroundImage: `linear-gradient(135deg, ${C.primary}, ${C.secondary})`,
+};
+
+function ConstellationCanvas() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let w, h, dpr;
+    let nodes = [];
+    let raf;
+
+    const colors = [C.primary, C.secondary, C.accent];
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const count = w < 640 ? 26 : 42;
+      nodes = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        r: Math.random() * 1.6 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      }));
+    }
+
+    function step() {
+      ctx.clearRect(0, 0, w, h);
+      for (const n of nodes) {
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < 0 || n.x > w) n.vx *= -1;
+        if (n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i],
+            b = nodes[j];
+          const dx = a.x - b.x,
+            dy = a.y - b.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 140) {
+            ctx.strokeStyle = `rgba(123,97,255,${0.18 * (1 - dist / 140)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for (const n of nodes) {
+        ctx.beginPath();
+        ctx.fillStyle = n.color;
+        ctx.globalAlpha = 0.85;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      if (!reduceMotion) raf = requestAnimationFrame(step);
+    }
+
+    resize();
+    step();
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full opacity-70"
+      aria-hidden="true"
+    />
+  );
+}
+
+function GlassCard({ children, className = "" }) {
+  return (
+    <div
+      className={`rounded-2xl border backdrop-blur-xl p-6 ${className}`}
+      style={{
+        backgroundColor: "rgba(30,41,59,0.55)",
+        borderColor: "rgba(123,97,255,0.25)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function PrimaryButton({ children, className = "", ...props }) {
+  return (
+    <button
+      {...props}
+      className={`px-7 py-3.5 rounded-full font-semibold text-white shadow-lg transition-transform hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${className}`}
+      style={{ ...gradientBg, boxShadow: "0 10px 30px -10px rgba(123,97,255,0.6)" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function GhostButton({ children, className = "", ...props }) {
+  return (
+    <button
+      {...props}
+      className={`px-7 py-3.5 rounded-full font-semibold text-white border transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${className}`}
+      style={{ borderColor: "rgba(255,255,255,0.25)" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+const features = [
+  "Safe Community",
+  "Verified Organizers",
+  "Female-Friendly Environment",
+  "Curated Experiences",
+  "Genuine Friendships",
+  "Premium Venues",
+];
+
+const testimonials = [
+  {
+    name: "Priya S.",
+    quote:
+      "I moved to Mumbai without knowing anyone. MySocialHub helped me build an amazing friend circle.",
+  },
+  {
+    name: "Rahul M.",
+    quote: "The atmosphere was comfortable and welcoming. I highly recommend it.",
+  },
+  {
+    name: "Sneha P.",
+    quote: "One of the best social experiences I have attended.",
+  },
+];
+
+const faqs = [
+  {
+    q: "Who can join?",
+    a: "Anyone in Mumbai looking to meet new people in a relaxed, social setting — most guests come solo and are 22-38.",
+  },
+  {
+    q: "Is the event safe?",
+    a: "Yes. Every event has verified organizers on-site, a check-in process, and a code of conduct guests agree to before booking.",
+  },
+  {
+    q: "Can I come alone?",
+    a: "Absolutely — most of our guests come solo. The format is designed to make it easy to meet people without knowing anyone beforehand.",
+  },
+  {
+    q: "Will there be women participants?",
+    a: "Yes, we maintain a balanced gender ratio at every event and keep the environment female-friendly by design.",
+  },
+  {
+    q: "What is included in the ticket?",
+    a: "Entry, a welcome drink, and access to all structured networking activities for the evening. Specific inclusions vary by pass type.",
+  },
+];
+
+const galleryPhotos = [
+  "social-1",
+  "social-2",
+  "social-3",
+  "social-4",
+  "social-5",
+  "social-6",
+];
+
+export default function MySocialHubLanding() {
+  const [openFAQ, setOpenFAQ] = useState(0);
+
+  return (
+    <div
+      className="min-h-screen w-full font-sans text-white"
+      style={{ backgroundColor: C.bg }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        .font-sans { font-family: 'Inter', sans-serif; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.7s ease-out both; }
+      `}</style>
+
+      {/* Urgency banner */}
+      <div
+        className="text-center text-sm sm:text-base font-medium py-2.5 px-4"
+        style={gradientBg}
+      >
+        🔥 Mumbai Social Mixer — 27 June — Limited Seats Available
+      </div>
+
+      {/* Nav */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b" style={{ backgroundColor: "rgba(15,23,42,0.7)", borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-sm"
+              style={gradientBg}
+            >
+              MSH
+            </div>
+            <span className="font-bold text-lg tracking-tight">MySocialHub</span>
+          </div>
+          <a href="#event">
+            <PrimaryButton className="text-sm px-5 py-2.5">Join Next Event</PrimaryButton>
+          </a>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <ConstellationCanvas />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(123,97,255,0.18), transparent 70%)",
+          }}
+        />
+        <div className="relative max-w-4xl mx-auto px-5 sm:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center">
+          <p className="fade-up inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase px-3 py-1.5 rounded-full mb-6" style={{ color: C.accent, backgroundColor: "rgba(76,201,240,0.1)" }}>
+            <Sparkles size={14} /> Meet People. Build Connections.
+          </p>
+          <h1 className="fade-up text-4xl sm:text-6xl font-extrabold leading-[1.1] tracking-tight">
+            Meet New People in{" "}
+            <span style={gradientText}>Mumbai</span> Through Real Events
+          </h1>
+          <p className="fade-up mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed" style={{ animationDelay: "0.1s" }}>
+            Join curated meetups, coffee chats, board game nights, and social mixers
+            designed to help you create genuine friendships.
+          </p>
+          <div className="fade-up mt-9 flex flex-col sm:flex-row gap-3 justify-center" style={{ animationDelay: "0.2s" }}>
+            <a href="#event"><PrimaryButton>Join Next Event</PrimaryButton></a>
+            <a href="#why"><GhostButton>View Upcoming Events</GhostButton></a>
+          </div>
+        </div>
+      </section>
+
+      {/* Why choose */}
+      <section id="why" className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">
+          Why Choose <span style={gradientText}>MySocialHub</span>
+        </h2>
+        <p className="text-center text-slate-400 mb-12 max-w-xl mx-auto">
+          Every event is designed so meeting strangers feels easy, not awkward.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {features.map((f) => (
+            <GlassCard key={f} className="flex items-center gap-3 py-5">
+              <span
+                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                style={gradientBg}
+              >
+                <Check size={16} className="text-white" />
+              </span>
+              <span className="text-sm sm:text-base font-medium">{f}</span>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
+      {/* Upcoming event */}
+      <section id="event" className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+        <GlassCard className="overflow-hidden p-0 sm:flex sm:items-stretch">
+          <div className="h-56 sm:h-auto sm:w-2/5 relative">
+            <img
+              src="https://picsum.photos/seed/mumbai-mixer/700/700"
+              alt="Guests mingling at a MySocialHub event"
+              className="w-full h-full object-cover"
+            />
+            <div
+              className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold"
+              style={gradientBg}
+            >
+              27 JUNE
+            </div>
+          </div>
+          <div className="p-7 sm:p-9 sm:w-3/5 flex flex-col justify-center gap-4">
+            <h3 className="text-2xl font-bold">Mumbai Social Mixer</h3>
+            <div className="flex flex-col gap-2.5 text-slate-300 text-sm">
+              <span className="flex items-center gap-2"><MapPin size={16} style={{ color: C.accent }} /> Luft The Air, Andheri</span>
+              <span className="flex items-center gap-2"><Calendar size={16} style={{ color: C.accent }} /> 27 June</span>
+              <span className="flex items-center gap-2"><Clock size={16} style={{ color: C.accent }} /> 7 PM onwards</span>
+            </div>
+            <div className="mt-2">
+              <PrimaryButton>Reserve Seat</PrimaryButton>
+            </div>
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* Gallery */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
+          Inside the <span style={gradientText}>Community</span>
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {galleryPhotos.map((seed, i) => (
+            <div key={seed} className={`rounded-2xl overflow-hidden ${i === 0 ? "col-span-2 sm:col-span-1 row-span-2" : ""}`}>
+              <img
+                src={`https://picsum.photos/seed/${seed}/500/500`}
+                alt="MySocialHub community moment"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
+          What Our <span style={gradientText}>Community</span> Says
+        </h2>
+        <div className="grid sm:grid-cols-3 gap-5">
+          {testimonials.map((t) => (
+            <GlassCard key={t.name} className="flex flex-col gap-4">
+              <p className="text-slate-200 text-sm leading-relaxed">“{t.quote}”</p>
+              <div className="flex items-center gap-3 mt-auto">
+                <span
+                  className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
+                  style={gradientBg}
+                >
+                  {t.name[0]}
+                </span>
+                <span className="font-semibold text-sm">{t.name}</span>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-5 sm:px-8 py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">
+          Frequently Asked Questions
+        </h2>
+        <div className="flex flex-col gap-3">
+          {faqs.map((item, i) => {
+            const open = openFAQ === i;
+            return (
+              <div
+                key={item.q}
+                className="rounded-2xl border overflow-hidden"
+                style={{ borderColor: "rgba(123,97,255,0.25)", backgroundColor: "rgba(30,41,59,0.55)" }}
+              >
+                <button
+                  onClick={() => setOpenFAQ(open ? -1 : i)}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left font-medium focus:outline-none"
+                  aria-expanded={open}
+                >
+                  {item.q}
+                  <ChevronDown
+                    size={18}
+                    className="transition-transform flex-shrink-0 ml-3"
+                    style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", color: C.accent }}
+                  />
+                </button>
+                {open && (
+                  <p className="px-5 pb-4 text-sm text-slate-300 leading-relaxed">{item.a}</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid sm:grid-cols-3 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-xs" style={gradientBg}>MSH</div>
+              <span className="font-bold">MySocialHub</span>
+            </div>
+            <p className="text-sm text-slate-400">Meet People. Build Connections.</p>
+          </div>
+          <div className="flex flex-col gap-2 text-sm text-slate-300">
+            <a href="#" className="hover:text-white">Home</a>
+            <a href="#" className="hover:text-white">Events</a>
+            <a href="#" className="hover:text-white">Community</a>
+            <a href="#" className="hover:text-white">About</a>
+            <a href="#" className="hover:text-white">Contact</a>
+          </div>
+          <div className="flex flex-col gap-2 text-sm text-slate-300">
+            <a href="#" className="hover:text-white">Terms &amp; Conditions</a>
+            <a href="#" className="hover:text-white">Privacy Policy</a>
+            <a href="#" className="flex items-center gap-2 hover:text-white"><Instagram size={15} /> Instagram</a>
+            <a href="#" className="flex items-center gap-2 hover:text-white"><Mail size={15} /> Email Support</a>
+          </div>
+        </div>
+        <div className="text-center text-xs text-slate-500 pb-8">
+          © {new Date().getFullYear()} MySocialHub. All rights reserved.
+        </div>
+      </footer>
+    </div>
+  );
+}
